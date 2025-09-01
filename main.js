@@ -404,7 +404,7 @@ class Launcher
                 if (receive_message.type == "discussion_call")
                 {
 
-                    //他のメンバーに緊急会議があることを知らせます。
+                    //他のメンバーに緊急会議があることを知らせます。                    
                     for (let i = 0; i < Data.client.length; i++)
                         if (Data.client[i].roomID == receive_message.roomID)
                         {
@@ -572,7 +572,6 @@ class Launcher
                                 person: receive_message.person
                             }));
                         }
-            //        Data.room[receive_message.roomID].member[receive_message.person].life = "murdered";
                 }
 
                 //妨害があったときにやってくる要求です。
@@ -770,7 +769,7 @@ class Launcher
                     //もしだれもユーザーがいないなら
                     //その部屋は解散して次を待てるようにします。
                     if (check)
-                        Data.room_reset(Data.client[i].roomID);
+                        Data.room_reset(i);
                 }
 
                 //会議が開かれているときは
@@ -788,22 +787,26 @@ class Launcher
                                             check = false;
                             }
 
+
+
                     //投票が完了していたら
                     if (check)
                     {
                         let check2 = true;
+
                         for (let j = 0; j < Data.client.length; j++)
-                            if (check2)
-                                if (Data.client[j].socket != null)
-                                {
-                                    //AIキャラの投票を誰かにしてもらいます。
-                                    Data.client[j].socket.send(JSON.stringify({
-                                        type: "ai_vote",
-                                        vote_array: Data.room[i].Discussion.vote_array
-                                    }));
-                                    //誰か一人見つかればいいのでそれ以降はキャンセル                                    
-                                    check2 = false;
-                                }
+                            if (i == Data.client[j].roomID)
+                                if (check2)
+                                    if (Data.client[j].socket != null)
+                                    {
+                                        //AIキャラの投票を誰かにしてもらいます。
+                                        Data.client[j].socket.send(JSON.stringify({
+                                            type: "ai_vote",
+                                            vote_array: Data.room[i].Discussion.vote_array
+                                        }));
+                                        //誰か一人見つかればいいのでそれ以降はキャンセル                                    
+                                        check2 = false;
+                                    }
                         //誰もいないなら解散
                         if (check2)
                             Data.room_reset(i);
