@@ -572,7 +572,7 @@ class Launcher
                                 person: receive_message.person
                             }));
                         }
-                    Data.room[receive_message.roomID].member[receive_message.person].life = "murdered";
+            //        Data.room[receive_message.roomID].member[receive_message.person].life = "murdered";
                 }
 
                 //妨害があったときにやってくる要求です。
