@@ -1,6 +1,5 @@
 
 
-
 /*
  * 
  * サーバー側のメインプログラムです。
@@ -74,6 +73,7 @@ class Data
             map: 0,
             member: [],
             state: "idle",
+            host: -1,
 
             Discussion: {
                 vote_array: [
@@ -157,7 +157,6 @@ class Launcher
         //初めて接続したときはここで処理する
         websocket.on("connection", (connect_socket) => {
 
-
             //このゲームは３０人しか同時接続できない設定にしているので
             //３０人以上接続があったら弾くようにしています。            
             //また、３０以下だったときはそれぞれにナンバーをつけて管理します。
@@ -192,7 +191,6 @@ class Launcher
             //ここに記述されているものは、いわゆるイベントドリブンの関数で、
             //クライアント側から要求のきたものを処理している。
             connect_socket.on("message", (message_data) => {
-
 
                 //receive_messageはここではとても重要な変数です。
                 //クライアントからの送信内容はすべてmessage_dataに入ってきます。
@@ -364,19 +362,19 @@ class Launcher
 
                     //ここがインポスターを選んでいるところです。
                     //ランダムで誰にするか決めています。                                
-                                        let c = Math.floor(Math.random() * 8);
-                                       Data.room[receive_message.roomID].member[c].role = "imposter";
+                    let c = Math.floor(Math.random() * 8);
+                    Data.room[receive_message.roomID].member[c].role = "imposter";
 
-              //      for (let i = 0; i < Data.client.length; i++)
-               //         if (receive_message.socketID == i)
-                //            Data.room[Data.client[i].roomID].member[Data.client[i].memberID].role = "imposter";
+                    //      for (let i = 0; i < Data.client.length; i++)
+                    //         if (receive_message.socketID == i)
+                    //            Data.room[Data.client[i].roomID].member[Data.client[i].memberID].role = "imposter";
 
 
                     //準備ができたらデータをクライアントへ送信します。
                     for (let i = 0; i < Data.client.length; i++)
                         if (Data.client[i].roomID == receive_message.roomID)
                         {
-                            Data.client[i].state = "countdown";
+                            Data.client[i].state = "work";
                             Data.client[i].socket.send(JSON.stringify({
                                 type: "work_init",
                                 member: Data.room[receive_message.roomID].member,
@@ -397,6 +395,9 @@ class Launcher
                         if (Data.room[receive_message.roomID].member[i].controll == "auto")
                             Data.room[receive_message.roomID].member[i] = receive_message.info.member[i];
                     }
+
+                    Data.room[receive_message.roomID].host = receive_message.socketID;
+
                 }
 
                 //discussion_callは緊急会議が招集されたときにやってきます。
@@ -701,12 +702,16 @@ class Launcher
                 }
 
                 //作業中にときも待合室と同じです。
+
                 if (Data.client[i].state == "work")
                 {
-                    Data.client[i].socket.send(JSON.stringify({
-                        type: "room_info",
-                        room_info: Data.room[Data.client[i].roomID]
-                    }));
+                    if (i != Data.room[Data.client[i].roomID].host)
+                    {
+                        Data.client[i].socket.send(JSON.stringify({
+                            type: "room_info",
+                            room_info: Data.room[Data.client[i].roomID]
+                        }));
+                    }
 
                 }
             }
@@ -724,7 +729,7 @@ class Launcher
                                 if (Data.client[j].state != "ready_start")
                                     check = false;
                             }
-                          
+
 
                     if (check)
                     {
@@ -736,8 +741,8 @@ class Launcher
                                     type: "countdown_start"
                                 }));
                             }
-                            
-                            Data.room[i].state ="work";
+
+                        Data.room[i].state = "work";
                     }
                 }
 
