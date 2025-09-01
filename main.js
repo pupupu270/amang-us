@@ -127,7 +127,10 @@ class Launcher
     {
         let a = require("http");
         let b = require("ws");
-        const http = a.createServer();
+        const http = a.createServer((req , res)=>{
+            res.writeHead(200);
+            res.end("HTTP OK");
+        });
         const websocket = new b.Server({noServer: true});
         let past_connect = null;
         //通信をwebsocket用にアップグレードする時を捕まえる関数らしい
